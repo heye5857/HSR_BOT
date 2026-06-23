@@ -7,11 +7,14 @@ GAME_PATH = Path(r"E:\Epic Games\HonkaiStarRail\games\Star Rail Games\StarRail.e
 # OCR 設定
 TESSERACT_CMD = Path(r"C:\Program Files\Tesseract-OCR\tesseract.exe")
 OCR_LANG = "chi_tra"
-OCR_CONFIG = "--psm 6"
+OCR_CONFIG = "--psm 6 --oem 3 -c tessedit_char_blacklist=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 # 點擊座標
 CLICK_CENTER = (960, 540)
 CLICK_CONFIRM = (960, 700)
+CLICK_LOCKING = (455, 355)  # 鎖定按鈕標規幾何
+CLICK_DISCARD = (455, 405)   # 丢棄按鈕標規幾何
+CLICK_NEXT = (960, 700)      # 下一按鈕統一座標
 
 # 偵測與比對設定
 MATCH_THRESHOLD = 0.85
@@ -57,14 +60,32 @@ VALID_STATS = [
     "防禦力",
 ]
 
+RELIC_NAMES = [
+    "功動閃耀的魔法少女",
+    "應天涉遠的卜者",
+]
+
+PART_NAMES = ["頭部", "手部", "軀幹", "腳部"]
+
+# 字符白名單
+RELIC_NAME_CHARS = "功動閃耀魔法少女應天涉遠卜者"
+STAT_NAME_CHARS = "暴擊率傷害攻擊力速度生命值防禦%"
+PART_NAME_CHARS = "頭手軀幹腳部"
+NUMBER_CHARS = "0123456789.-+%"
+
 OCR_FIX = {
     "暴荐率": "暴擊率",
     "暴聞傷害": "暴擊傷害",
+    "防久力": "防禦力",
+    "防禦": "防禦力",
 }
 
 RELIC_OCR_FIX = {
+    "功勳閃耀的魔法少女": "功動閃耀的魔法少女",
     "功動閃耀的魔法少女": "功動閃耀的魔法少女",
+    "點功勳閃耀的魔法少女": "功動閃耀的魔法少女",
     "應天水這的卜者": "應天涉遠的卜者",
+    "應天涉遠的卜者": "應天涉遠的卜者",
 }
 
 # 圖片資源路徑

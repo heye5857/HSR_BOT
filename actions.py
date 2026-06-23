@@ -14,7 +14,7 @@ def close_game():
 
         pyautogui.hotkey("alt", "f4")
 
-        time.sleep(2)
+        time.sleep(1)
 
 def press_alt():
     ctypes.windll.user32.keybd_event(ALT, 0, 0, 0)
@@ -39,145 +39,145 @@ def home_action():
 
 
 def entrust_action():
-    click_image(cfg.PATH["entrust"])
+    click_image("entrust")
 
 
 def claim_entrust_action():
-    click_image(cfg.PATH["claim entrust"])
+    click_image("claim entrust")
 
 
 def successfully_claim_action():
-    click((960, 850))
+    click(cfg.CLICK_CONFIRM)
 
 
 def leave_action():
     release_alt()
     pyautogui.press("esc")
-    time.sleep(0.5)
+    time.sleep(0.2)
     press_alt()
 
 
 def mail_action():
-    click_image(cfg.PATH["has mail"])
+    click_image("has mail")
 
 
 def claim_mail_action():
-    click_image(cfg.PATH["claim mail"])
+    click_image("claim mail")
 
 
 def action_action():
     press_alt()
-    click_image(cfg.PATH["action"])
+    click_image("action")
 
 
 def task_action():
-    click_image(cfg.PATH["task"])
+    click_image("task")
 
 
 def reward_action():
-    click_image(cfg.PATH["reward"])
+    click_image("reward")
 
 
 def crafting_action():
-    click_image(cfg.PATH["crafting"])
+    click_image("crafting")
 
 
 def cookie_action():
-    click_image(cfg.PATH["cookie"])
+    click_image("cookie")
 
 
 def enter_action():
-    click_image(cfg.PATH["enter"])
+    click_image("enter")
 
 
 def claim_reward_action():
-    click_image(cfg.PATH["claim reward_1"])
-    click_image(cfg.PATH["claim reward_2"])
+    click_image("claim reward_1")
+    click_image("claim reward_2")
 
 
 def prepare_action():
-    click_image(cfg.PATH["prepare"])
+    click_image("prepare")
 
 
 def start_action():
-    click_image(cfg.PATH["challenge"])
+    click_image("challenge")
 
 
 def reduce_action():
-    click_image(cfg.PATH["reduce"])
+    click_image("reduce")
 
 
 def claim_schedule_action():
-    click_image(cfg.PATH["claim schedule"])
+    click_image("claim schedule")
 
 
 def start_challenge_action_1():
-    click_image(cfg.PATH["start_challenge_1"])
+    click_image("start_challenge_1")
 
 
 def start_challenge_action_2():
-    click_image(cfg.PATH["start_challenge_2"])
+    click_image("start_challenge_2")
 
 
 def confirm_action():
-    click_image(cfg.PATH["confirm"], 0.95)
+    click_image("confirm", 0.95)
 
 
 def select_action():
-    click_image(cfg.PATH["device"])
+    click_image("device")
 
 
 def locking_action():
-    click_image(cfg.PATH["locking"])
+    """使用座標直接鎖定，避免模板匹配。"""
+    click(cfg.CLICK_LOCKING)
 
 
 def discard_action():
-    click_image(cfg.PATH["discard"])
+    """使用座標直接丢棄，避免模板匹配。"""
+    click(cfg.CLICK_DISCARD)
 
 
 def next_action(screen):
-    if match(screen, TEMPLATES["next_1"]):
-        click_image(cfg.PATH["next_1"])
+    """快速惨找下一页按鈕，使用低門榨值換取速度。"""
+    if click_image("next_1", screen=screen, threshold=0.75):
         return
-
-    if match(screen, TEMPLATES["next_2"]):
-        click_image(cfg.PATH["next_2"])
+    if click_image("next_2", screen=screen, threshold=0.75):
         return
 
 
 def exit_stage_action():
-    click_image(cfg.PATH["exit stage"])
+    click_image("exit stage")
 
 
 def pass_action():
-    click_image(cfg.PATH["pass"])
+    click_image("pass")
 
 def has_pass_mission_reward_action():
-    click_image(cfg.PATH["hasPassMissionReward"])
+    click_image("hasPassMissionReward")
 
 
 def quick_claim_action():
-    click_image(cfg.PATH["quick claim"])
+    click_image("quick claim")
 
 
 def has_pass_reward_action():
-    click_image(cfg.PATH["hasPassReward"], 0.8)
+    click_image("hasPassReward", 0.8)
 
 
 def quick_farm_action():
-    click_image(cfg.PATH["quick farm"])
+    click_image("quick farm")
 
 
 def maximum_action():
-    click_image(cfg.PATH["maximum"])
+    click_image("maximum")
 
 
 def closure_action():
-    click_image(cfg.PATH["closure"])
+    click_image("closure")
 
 
 def pass_page_action():
-    click_image(cfg.PATH["pass page"])
+    click_image("pass page")
 
 
 def recover():

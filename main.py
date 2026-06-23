@@ -311,26 +311,27 @@ class Bot:
 
     def handle_successfully_claim(self, screen):
         actions.successfully_claim_action()
-        time.sleep(0.5)
+        time.sleep(0.3)
 
     def handle_entrusted(self, screen):
         actions.leave_action()
-        time.sleep(0.5)
+        time.sleep(0.3)
 
     def handle_claim_mail(self, screen):
         actions.claim_mail_action()
-        time.sleep(0.5)
+        time.sleep(0.3)
 
     def handle_delete(self, screen):
         actions.leave_action()
-        time.sleep(1)
+        time.sleep(0.3)
         actions.leave_action()
-        time.sleep(1)
+        time.sleep(0.3)
 
     def handle_reward_page(self, screen):
         if vision.match(screen, vision.TEMPLATES["schedule"], 0.95):
             self.daily_tasks = False
             while not self.stop_requested:
+                # 優化：複用 screen 影像
                 screen = vision.capture_screen()
                 reward_1 = vision.match(screen, vision.TEMPLATES["claim reward_1"], 0.95)
                 reward_2 = vision.match(screen, vision.TEMPLATES["claim reward_2"], 0.95)
@@ -369,6 +370,7 @@ class Bot:
             actions.quick_farm_action()
             time.sleep(0.5)
             return
+        # 優化：複用 screen 影像，避免重複截圖
         if self.daily_tasks is False and (stamina is not None and stamina >= 40) or (stamina is not None and stamina >= 40):
             actions.enter_action()
             time.sleep(0.5)
@@ -424,24 +426,25 @@ class Bot:
 
     def handle_confirm(self, screen):
         actions.confirm_action()
-        time.sleep(1)
+        time.sleep(0.3)
 
     def handle_challenge_successful(self, screen):
         self.has_battled = True
         if self.selected:
             actions.exit_stage_action()
-            time.sleep(2)
+            time.sleep(1)
         else:
             if vision.match(screen, vision.TEMPLATES["device"]):
                 actions.select_action()
-                time.sleep(1)
+                time.sleep(0.3)
 
     def handle_state_page(self, screen):
+        # 優化：複用 screen 影像
         if vision.match(screen, vision.TEMPLATES["suitable"]):
             actions.locking_action()
-            time.sleep(1)
+            time.sleep(0.15)
             actions.next_action(screen)
-            time.sleep(1)
+            time.sleep(0.15)
             return
 
         relic = vision.parse_relic(screen)
@@ -450,24 +453,24 @@ class Bot:
         print("遺物評分:", score)
         if score == "未知遺器":
             actions.next_action(screen)
-            time.sleep(1)
+            time.sleep(0.1)
             return
         elif score >= 50:
             actions.locking_action()
         else:
             actions.discard_action()
-        time.sleep(1)
+        time.sleep(0.15)
         actions.next_action(screen)
-        time.sleep(1)
+        time.sleep(0.15)
 
     def handle_selected(self, screen):
         actions.next_action(screen)
-        time.sleep(1)
+        time.sleep(0.3)
 
     def handle_select_end(self, screen):
         self.selected = True
         actions.leave_action()
-        time.sleep(0.5)
+        time.sleep(0.3)
 
     def handle_pass_page(self, screen):
         if not self.no_pass_reward and vision.match(screen, vision.TEMPLATES["hasPassMissionReward"], 0.95):    

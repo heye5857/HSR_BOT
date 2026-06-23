@@ -5,7 +5,7 @@ import re
 import pyautogui
 import pytesseract
 from pytesseract import Output
-from difflib import get_close_matches
+from difflib import get_close_matches, SequenceMatcher
 
 import config as cfg
 
@@ -16,7 +16,11 @@ def normalize_stat(text):
     for wrong, correct in cfg.OCR_FIX.items():
         text = text.replace(wrong, correct)
 
-    text = re.sub(r"\s+", "", text)
+    # 進一步清洗：去除數字、百分比符號及其他非中英文字符，只保留屬性名稱
+    text = re.sub(r"[-+]?\d*\.?\d+", "", text) # 移除數值
+    text = text.replace("%", "") # 移除百分號
+    text = re.sub(r"[^\u4e00-\u9fffA-Za-z]+", "", text) # 只保留中英文字符
+    text = text.strip() # 再次去除可能產生的多餘空白
 
     match = get_close_matches(
         text,
@@ -30,26 +34,106 @@ def normalize_stat(text):
 
     return text
 
+def fuzzy_match_relic_name(text):
+    cleaned = re.sub(r"[^\u4e00-\u9fff]", "", text or "")
+    if not cleaned:
+        return None
 
-def normalize_relic_name(text):
+    for name in cfg.RELIC_RULES.keys():
+        if name in cleaned:
+            return name
+
+    best_name = None
+    best_ratio = 0.0
+    for name in cfg.RELIC_RULES.keys():
+        ratio = SequenceMatcher(None, cleaned, name).ratio()
+        if ratio > best_ratio:
+            best_ratio = ratio
+            best_name = name
+
+    if best_ratio >= 0.55:
+        return best_name
+    return None
+
+
+def extract_relic_name_from_text(text):
     text = text.strip()
     for wrong, correct in cfg.RELIC_OCR_FIX.items():
         text = text.replace(wrong, correct)
 
-    text = re.sub(r"\s+", "", text)
+    best = None
+    for line in text.splitlines():
+        line_clean = re.sub(r"[-+]?\d*\.?\d+%?", "", line)
+        result = fuzzy_match_relic_name(line_clean)
+        if result:
+            return result
+        if not best:
+            best = result
 
-    relic_names = list(cfg.RELIC_RULES.keys())
-    match = get_close_matches(
-        text,
-        relic_names,
-        n=1,
-        cutoff=0.5
-    )
+    if best:
+        return best
 
-    if match:
-        return match[0]
+    cleaned = re.sub(r"[-+]?\d*\.?\d+%?", "", text)
+    return fuzzy_match_relic_name(cleaned)
+
+
+def normalize_relic_name(text):
+    if not text:
+        return text
+
+    text = text.strip()
+    for wrong, correct in cfg.RELIC_OCR_FIX.items():
+        text = text.replace(wrong, correct)
+
+    text = re.sub(r"[^\u4e00-\u9fff]", "", text)
+    for name in cfg.RELIC_RULES.keys():
+        if name in text:
+            return name
+
+    result = fuzzy_match_relic_name(text)
+    if result:
+        return result
 
     return text
+
+
+def parse_relic_from_full_text(full_text):
+    """高效率地從完整 OCR 文本中提取遺器信息。"""
+    lines = [line.strip() for line in full_text.splitlines() if line.strip()]
+    name = None
+    part = ""
+    main_stat = ""
+    sub_lines = []
+    found_main = False
+
+    for line in lines:
+        # 優先找遺器名稱
+        if not name:
+            name_candidate = extract_relic_name_from_text(line)
+            if name_candidate and name_candidate in cfg.RELIC_RULES:
+                name = name_candidate
+                continue
+
+        # 尋找部位
+        if not part:
+            normalized_part = normalize_part(line)
+            if normalized_part:
+                part = normalized_part
+                continue
+
+        # 尋找主詞條（含有屬性名稱）
+        if not found_main:
+            stat_candidate = normalize_stat(line)
+            if stat_candidate in cfg.VALID_STATS:
+                main_stat = stat_candidate
+                found_main = True
+                continue
+
+        # 其餘為副詞條
+        if re.search(r"[-+]?\d*\.?\d+", line):
+            sub_lines.append(line)
+
+    return name, main_stat, part, sub_lines
 
 # ===== 範本讀取 =====
 TEMPLATES = {}
@@ -59,23 +143,32 @@ for name, template_path in cfg.PATH.items():
         print(f"⚠ 無法讀取範本: {template_path}")
     TEMPLATES[name] = template
 
-
 def capture_screen():
     """截取整個螢幕並回傳灰階影像。"""
     with mss.mss() as sct:
         monitor = sct.monitors[1]
         img = np.array(sct.grab(monitor))
-        return cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
+        # 確保輸出為 uint8 格式
+        if gray.dtype != np.uint8:
+            gray = gray.astype(np.uint8)
+        return gray
 
-
-def find_center(template_path, threshold=cfg.MATCH_THRESHOLD):
+def find_center(template_name, *, screen: np.ndarray = None, threshold: float = cfg.MATCH_THRESHOLD):
     """在螢幕上尋找圖片範本中心座標，優先取最靠近左上角的位置。"""
-    screen = capture_screen()
-    template = cv2.imread(template_path, cv2.IMREAD_GRAYSCALE)
+    if screen is None:
+        screen = capture_screen()
+    template = TEMPLATES.get(template_name)
 
     if template is None:
-        print("⚠ 模板讀取失敗:", template_path)
+        print("⚠ 模板讀取失敗:", template_name)
         return None
+
+    # 確保影像格式一致
+    if screen.dtype != np.uint8:
+        screen = screen.astype(np.uint8)
+    if template.dtype != np.uint8:
+        template = template.astype(np.uint8)
 
     res = cv2.matchTemplate(screen, template, cv2.TM_CCOEFF_NORMED)
     loc = np.where(res >= threshold)
@@ -95,21 +188,29 @@ def find_center(template_path, threshold=cfg.MATCH_THRESHOLD):
     h, w = template.shape
     return (nearest[0] + w // 2, nearest[1] + h // 2)
 
-
-def click_image(template_path, threshold=cfg.MATCH_THRESHOLD):
+def click_image(template_name, *, screen: np.ndarray = None, threshold: float = cfg.MATCH_THRESHOLD):
     """點擊範本所在位置，找不到回傳 False。"""
-    pos = find_center(template_path, threshold)
+    if screen is None:
+        pos = find_center(template_name, threshold=threshold)  
+    else:
+        pos = find_center(template_name, screen=screen, threshold=threshold)
+    
     if pos:
         pyautogui.click(pos[0], pos[1])
         return True
 
-    print("⚠ 找不到圖片:", template_path)
+    print("⚠ 找不到圖片:", template_name)
     return False
-
 
 def match(screen, template, threshold=cfg.MATCH_THRESHOLD):
     if template is None:
         return False
+
+    # 確保影像格式一致
+    if screen.dtype != np.uint8:
+        screen = screen.astype(np.uint8)
+    if template.dtype != np.uint8:
+        template = template.astype(np.uint8)
 
     # 檢查模板尺寸是否超過螢幕尺寸，防止 OpenCV 報錯
     h_s, w_s = screen.shape[:2]
@@ -121,7 +222,6 @@ def match(screen, template, threshold=cfg.MATCH_THRESHOLD):
     res = cv2.matchTemplate(screen, template, cv2.TM_CCOEFF_NORMED)
     return np.max(res) >= threshold
 
-
 def detect_state(screen):
     for name, template in TEMPLATES.items():
         if template is None:
@@ -130,11 +230,52 @@ def detect_state(screen):
             return name.upper().replace(" ", "_")
     return cfg.UNKNOWN
 
-
 def preprocess(roi):
-    roi = cv2.resize(roi, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+    """高速版會像進行二值化。"""
+    # 重新設定大小時使用更快的插值方法
+    roi = cv2.resize(roi, None, fx=1.5, fy=1.5, interpolation=cv2.INTER_LINEAR)
     _, roi = cv2.threshold(roi, 150, 255, cv2.THRESH_BINARY)
     return roi
+
+def read_text_filtered(roi, char_whitelist, language="chi_tra"):
+    """讀取文字並只保留白名單中的字符。"""
+    roi = preprocess(roi)
+    text = pytesseract.image_to_string(
+        roi,
+        lang=language,
+        config=cfg.OCR_CONFIG,
+    )
+    text = text.strip()
+    filtered = "".join(c for c in text if c in char_whitelist or c.isspace())
+    return filtered.strip()
+
+
+def read_text_for_relic_name(roi):
+    """專用於遺器名稱辨識，限制字符到已知遺器名稱範圍。"""
+    text = read_text_filtered(roi, cfg.RELIC_NAME_CHARS)
+    for wrong, correct in cfg.RELIC_OCR_FIX.items():
+        text = text.replace(wrong, correct)
+    return text
+
+
+def read_text_for_stat(roi):
+    """專用於屬性名稱辨識，限制字符到已知屬性。"""
+    text = read_text_filtered(roi, cfg.STAT_NAME_CHARS)
+    for wrong, correct in cfg.OCR_FIX.items():
+        text = text.replace(wrong, correct)
+    return text
+
+
+def read_text_for_part(roi):
+    """專用於部位名稱辨識，限制字符到已知部位。"""
+    text = read_text_filtered(roi, cfg.PART_NAME_CHARS)
+    return text
+
+
+def read_text_for_number(roi):
+    """專用於數值辨識，限制字符到數字、小數點和百分號。"""
+    text = read_text_filtered(roi, cfg.NUMBER_CHARS)
+    return text
 
 
 def read_text(roi):
@@ -145,7 +286,6 @@ def read_text(roi):
         config=cfg.OCR_CONFIG,
     )
     return text.strip()
-
 
 def get_stamina():
     roi = capture_screen()[50:80, 1470:1575]
@@ -162,9 +302,7 @@ def get_stamina():
     print("剩餘體力:", stamina)
     return stamina
 
-
 def click_task_button(keyword):
-
     screen = capture_screen()
 
     data = pytesseract.image_to_data(
@@ -174,11 +312,9 @@ def click_task_button(keyword):
     )
 
     for i in range(len(data["text"])):
-
         text = data["text"][i]
 
         if keyword in text:
-
             x = data["left"][i]
             y = data["top"][i]
             w = data["width"][i]
@@ -189,19 +325,14 @@ def click_task_button(keyword):
             # =========================
             # 計算按鈕位置
             # =========================
-
             button_x = x + w // 2
-
             button_y = y + 335
 
             pyautogui.click(button_x, button_y)
-
             return True
         
     print("⚠ 找不到任務:", keyword)    
-
     return False
-
 
 def parse_sub_stat(line):
     line = line.strip()
@@ -233,23 +364,57 @@ def parse_sub_stat(line):
         "is_percent": is_percent,
     }
 
+def normalize_part(text):
+    text = text.strip()
+    for part_name in ["頭部", "手部", "軀幹", "腳部"]:
+        if part_name in text:
+            return part_name
+    text = re.sub(r"[^\u4e00-\u9fff]", "", text)
+    if text in {"頭部", "手部", "軀幹", "腳部"}:
+        return text
+    return ""
+
 
 def parse_relic(screen):
+    """核心断單一次 OCR 並分解綐果。"""
+    # 先取得完整遺器區域
+    relic_roi = screen[405:630, 550:1480]  # 包含名稱、主詞條、副詞條、部位
+    
     result = {
-        "name": read_text(screen[600:630, 790:1020]),
-        "main_stat": normalize_stat(read_text(screen[405:440, 830:980]).strip()),
+        "name": "",
+        "main_stat": "",
         "sub_stats": [],
-        "part": read_text(screen[720:750, 550:600]),
+        "part": "",
     }
+    
+    # 從預處理後的 ROI 一次成控 OCR
+    relic_roi_processed = preprocess(relic_roi)
+    full_text = pytesseract.image_to_string(
+        relic_roi_processed,
+        lang=cfg.OCR_LANG,
+        config=cfg.OCR_CONFIG,
+    ).strip()
+    print(f"遺器完整文字: {full_text}")
+    
+    fallback_name, fallback_main, fallback_part, fallback_sub_lines = parse_relic_from_full_text(full_text)
 
-    sub_text = read_text(screen[450:590, 835:1480])
-    for line in sub_text.splitlines():
+    # 断定遺器名稱，准確度高的情況下東报程
+    name_candidate = fallback_name or ""
+    if name_candidate in cfg.RELIC_RULES:
+        result["name"] = name_candidate
+    else:
+        result["name"] = name_candidate
+
+    result["main_stat"] = fallback_main or ""
+    result["part"] = fallback_part or ""
+    
+    # 解析副詞條
+    for line in fallback_sub_lines:
         parsed = parse_sub_stat(line)
         if parsed:
             result["sub_stats"].append(parsed)
 
     return result
-
 
 def score_relic(data):
     relic_name = normalize_relic_name(data.get("name", "").strip())
@@ -261,7 +426,7 @@ def score_relic(data):
     if rule is None:
         print("⚠ 未知遺器:", relic_name)
         return "未知遺器"
-
+    
     main = normalize_stat(main.strip())
     score = 0
     if part in {"頭部", "手部"}:
@@ -288,7 +453,6 @@ def score_relic(data):
             score += good_sub[stat_name]
 
     return score
-
 
 def show_roi(screen):
     debug = cv2.cvtColor(screen, cv2.COLOR_GRAY2BGR)
