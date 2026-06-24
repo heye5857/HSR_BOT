@@ -442,9 +442,9 @@ class Bot:
         # 優化：複用 screen 影像
         if vision.match(screen, vision.TEMPLATES["suitable"]):
             actions.locking_action()
-            time.sleep(0.15)
+            time.sleep(0.25)
             actions.next_action(screen)
-            time.sleep(0.15)
+            time.sleep(0.25)
             return
 
         relic = vision.parse_relic(screen)

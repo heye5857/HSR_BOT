@@ -138,11 +138,8 @@ def discard_action():
 
 
 def next_action(screen):
-    """快速惨找下一页按鈕，使用低門榨值換取速度。"""
-    if click_image("next_1", screen=screen, threshold=0.75):
-        return
-    if click_image("next_2", screen=screen, threshold=0.75):
-        return
+    """使用座標直接點擊下一步，避免模板匹配。"""
+    click(cfg.CLICK_NEXT)
 
 
 def exit_stage_action():

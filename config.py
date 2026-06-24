@@ -14,7 +14,7 @@ CLICK_CENTER = (960, 540)
 CLICK_CONFIRM = (960, 700)
 CLICK_LOCKING = (455, 355)  # 鎖定按鈕標規幾何
 CLICK_DISCARD = (455, 405)   # 丢棄按鈕標規幾何
-CLICK_NEXT = (960, 700)      # 下一按鈕統一座標
+CLICK_NEXT = (1600, 540)      # 下一按鈕統一座標
 
 # 偵測與比對設定
 MATCH_THRESHOLD = 0.85
