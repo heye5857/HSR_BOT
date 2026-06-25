@@ -60,8 +60,6 @@ def main():
     # 添加資料夾與檔案
     if image_dir.exists():
         cmd.append(f"--add-data={image_dir}{os.pathsep}images")
-    if config_py.exists():
-        cmd.append(f"--add-data={config_py}{os.pathsep}.")
     
     if icon_path.exists():
         print(f"🎨 套用圖標: {icon_path}")
@@ -94,12 +92,16 @@ def main():
         print("✅ 打包完成！")
         print("=" * 70)
         exe_path = project_root / "dist" / "HSR_BOT" / "HSR_BOT.exe"
+        dist_dir = project_root / "dist" / "HSR_BOT"
+        # 手動複製 config.py 到執行檔目錄（PyInstaller 不會對 module 做 --add-data）
+        if config_py.exists():
+            shutil.copy2(config_py, dist_dir / "config.py")
+            print("📄 config.py 已複製到執行檔目錄，可直接編輯修改設定。")
         print(f"📦 執行檔位置: {exe_path}")
         print("\n💡 重要提示：")
         print("   1. 此程式需要「系統管理員權限」才能正常操作遊戲視窗。")
         print("   2. 請確保電腦已安裝 Tesseract-OCR，並在 config.py 中正確設定路徑。")
         print("   3. 圖片資源已封裝進執行檔中。")
-        print("   4. config.py 已複製到執行檔目錄，可直接編輯修改設定。")
     else:
         print("\n❌ 打包失敗！")
         sys.exit(1)
