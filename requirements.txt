@@ -1,2 +1,6 @@
 opencv-python
 numpy
+psutil
+pyautogui
+pytesseract
+mss
