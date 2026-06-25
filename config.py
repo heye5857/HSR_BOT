@@ -8,17 +8,20 @@ GAME_PATH = Path(r"E:\Epic Games\HonkaiStarRail\games\Star Rail Games\StarRail.e
 TESSERACT_CMD = Path(r"C:\Program Files\Tesseract-OCR\tesseract.exe")
 OCR_LANG = "chi_tra"
 OCR_CONFIG = "--psm 6"
+OCR_CHARS = "0123456789.%+暴擊率傷害攻擊力速度生命值防禦力頭部手軀幹腳功動閃耀的魔法少女應天涉遠卜者"
+OCR_CHARS_DIGITS = "--psm 6 -c tessedit_char_whitelist=0123456789"
 
 # 點擊座標
 CLICK_CENTER = (960, 540)
 CLICK_CONFIRM = (960, 700)
-CLICK_LOCKING = (455, 355)
-CLICK_DISCARD = (455, 405)
-CLICK_NEXT = (1600, 540)
+CLICK_LOCKING = (455, 355)  # 鎖定按鈕標規幾何
+CLICK_DISCARD = (455, 405)   # 丢棄按鈕標規幾何
+CLICK_NEXT = (1600, 540)      # 下一按鈕統一座標
 
 # 偵測與比對設定
 MATCH_THRESHOLD = 0.85
 STUCK_TIME = 60
+LOOP_DELAY = 0.2
 
 # 狀態定義
 LOGIN_1 = "LOGIN_1"

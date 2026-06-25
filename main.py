@@ -221,7 +221,7 @@ class Bot:
 
             cycle_count += 1
             screen = vision.capture_screen()
-            state = vision.detect_state(screen)
+            state = vision.detect_state(screen, self.prev_state)
             
             if state != self.prev_state:
                 self.reset_stuck_timer()
@@ -238,6 +238,8 @@ class Bot:
 
             handler = self.handlers.get(state, self.handle_unknown_state)
             handler(screen)
+
+            time.sleep(cfg.LOOP_DELAY)
 
             if self.stop_running:
                 actions.release_alt()
@@ -351,7 +353,7 @@ class Bot:
             time.sleep(0.5)
 
     def handle_task_page(self, screen):
-        stamina = vision.get_stamina()
+        stamina = vision.get_stamina(screen)
         self.stamina = stamina
         if stamina >= 40:
             self.has_battled = False

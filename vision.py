@@ -1,3 +1,6 @@
+import atexit
+import os
+import tempfile
 import cv2
 import numpy as np
 import mss
@@ -12,6 +15,16 @@ import config as cfg
 pytesseract.pytesseract.tesseract_cmd = str(cfg.TESSERACT_CMD)
 
 _sct = mss.mss()
+
+# Write whitelist to a temp config file to avoid Windows cmdline encoding issues
+_chars_config = None
+if cfg.OCR_CHARS:
+    _chars_config = tempfile.NamedTemporaryFile(
+        mode='w', suffix='.config', delete=False, encoding='utf-8'
+    )
+    _chars_config.write(f"tessedit_char_whitelist {cfg.OCR_CHARS}\n")
+    _chars_config.close()
+    atexit.register(lambda p=os.path.abspath(_chars_config.name): os.unlink(p))
 
 def normalize_stat(text):
     text = text.strip()
@@ -130,14 +143,18 @@ def match(screen, template, threshold=cfg.MATCH_THRESHOLD):
     h_s, w_s = screen.shape[:2]
     h_t, w_t = template.shape[:2]
     if h_t > h_s or w_t > w_s:
-        # print(f"⚠ 警告: 模板尺寸 ({w_t}x{h_t}) 超過螢幕尺寸 ({w_s}x{h_s})，請檢查 DPI 縮放設定")
+        print(f"⚠ 警告: 模板尺寸 ({w_t}x{h_t}) 超過螢幕尺寸 ({w_s}x{h_s})，請檢查 DPI 縮放設定")
         return False
 
     res = cv2.matchTemplate(screen, template, cv2.TM_CCOEFF_NORMED)
     return np.max(res) >= threshold
 
 
-def detect_state(screen):
+def detect_state(screen, hint=None):
+    if hint:
+        hint_key = hint.lower().replace("_", " ")
+        if hint_key in TEMPLATES and match(screen, TEMPLATES[hint_key]):
+            return hint
     for name, template in TEMPLATES.items():
         if template is None:
             continue
@@ -152,20 +169,28 @@ def preprocess(roi):
     return roi
 
 
-def read_text(roi):
+def read_text(roi, chars=False):
     roi = preprocess(roi)
+    config = cfg.OCR_CONFIG
+    if chars and _chars_config:
+        config = f"{config} {_chars_config.name}"
     text = pytesseract.image_to_string(
         roi,
         lang=cfg.OCR_LANG,
-        config=cfg.OCR_CONFIG,
+        config=config,
     )
     return text.strip()
 
 
-def get_stamina():
-    roi = capture_screen()[50:80, 1470:1575]
-    text = read_text(roi)
-    text = text.replace("O", "0").replace("o", "0")
+def get_stamina(screen=None):
+    if screen is None:
+        screen = capture_screen()
+    roi = screen[50:80, 1470:1575]
+    text = pytesseract.image_to_string(
+        preprocess(roi),
+        lang=cfg.OCR_LANG,
+        config=cfg.OCR_CHARS_DIGITS,
+    )
     print("OCR文字:", text)
 
     digits = re.findall(r"\d+", text)
@@ -251,13 +276,13 @@ def parse_sub_stat(line):
 
 def parse_relic(screen):
     result = {
-        "name": read_text(screen[600:630, 790:1020]),
-        "main_stat": normalize_stat(read_text(screen[405:440, 830:980]).strip()),
+        "name": read_text(screen[600:630, 790:1020], chars=True),
+        "main_stat": normalize_stat(read_text(screen[405:440, 830:980], chars=True).strip()),
         "sub_stats": [],
-        "part": read_text(screen[720:750, 550:600]),
+        "part": read_text(screen[720:750, 550:600], chars=True),
     }
 
-    sub_text = read_text(screen[450:590, 835:1480])
+    sub_text = read_text(screen[450:590, 835:1480], chars=True)
     for line in sub_text.splitlines():
         parsed = parse_sub_stat(line)
         if parsed:
