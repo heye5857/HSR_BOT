@@ -8,7 +8,6 @@ GAME_PATH = Path(r"E:\Epic Games\HonkaiStarRail\games\Star Rail Games\StarRail.e
 TESSERACT_CMD = Path(r"C:\Program Files\Tesseract-OCR\tesseract.exe")
 OCR_LANG = "chi_tra"
 OCR_CONFIG = "--psm 6"
-OCR_CHARS = "0123456789.%+暴擊率傷害攻擊力速度生命值防禦力頭部手軀幹腳功動閃耀的魔法少女應天涉遠卜者"
 
 # 點擊座標
 CLICK_CENTER = (960, 540)
@@ -195,6 +194,18 @@ RELIC_RULES = {
         },
     },
 }
+
+# 自動從 RELIC_RULES 產生 OCR 白名單字元
+_RELIC_CHARS = set("0123456789.%+頭部手軀幹腳")
+for _name, _rules in RELIC_RULES.items():
+    _RELIC_CHARS.update(_name)
+    for _category in _rules.values():
+        for _stat in _category:
+            _RELIC_CHARS.update(_stat)
+for _stat in VALID_STATS:
+    _RELIC_CHARS.update(_stat)
+OCR_CHARS = "".join(sorted(_RELIC_CHARS))
+del _RELIC_CHARS
 
 # 允許 PyInstaller 打包後仍可編輯設定（外部的 config.py 會覆蓋內建預設值）
 if getattr(sys, 'frozen', False):
