@@ -164,8 +164,8 @@ def detect_state(screen, hint=None):
 
 
 def preprocess(roi):
-    roi = cv2.resize(roi, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
-    _, roi = cv2.threshold(roi, 150, 255, cv2.THRESH_BINARY)
+    roi = cv2.resize(roi, None, fx=cfg.OCR_RESIZE, fy=cfg.OCR_RESIZE, interpolation=cv2.INTER_LINEAR)
+    _, roi = cv2.threshold(roi, cfg.OCR_THRESHOLD, 255, cv2.THRESH_BINARY)
     return roi
 
 
@@ -185,7 +185,8 @@ def read_text(roi, chars=False):
 def get_stamina(screen=None):
     if screen is None:
         screen = capture_screen()
-    roi = screen[50:80, 1470:1575]
+    y1, y2, x1, x2 = cfg.STAMINA_ROI
+    roi = screen[y1:y2, x1:x2]
     text = read_text(roi)
     print("OCR文字:", text)
 
@@ -233,7 +234,7 @@ def click_task_button(keyword):
 
             button_x = x + w // 2
 
-            button_y = y + 335
+            button_y = y + cfg.TASK_BUTTON_Y_OFFSET
 
             pyautogui.click(button_x, button_y)
 
@@ -276,14 +277,18 @@ def parse_sub_stat(line):
 
 
 def parse_relic(screen):
+    ny1, ny2, nx1, nx2 = cfg.RELIC_NAME_ROI
+    my1, my2, mx1, mx2 = cfg.RELIC_MAIN_STAT_ROI
+    py1, py2, px1, px2 = cfg.RELIC_PART_ROI
+    sy1, sy2, sx1, sx2 = cfg.RELIC_SUB_TEXT_ROI
     result = {
-        "name": read_text(screen[600:630, 790:1020], chars=True),
-        "main_stat": normalize_stat(read_text(screen[405:440, 830:980], chars=True).strip()),
+        "name": read_text(screen[ny1:ny2, nx1:nx2], chars=True),
+        "main_stat": normalize_stat(read_text(screen[my1:my2, mx1:mx2], chars=True).strip()),
         "sub_stats": [],
-        "part": read_text(screen[720:750, 550:600], chars=True),
+        "part": read_text(screen[py1:py2, px1:px2], chars=True),
     }
 
-    sub_text = read_text(screen[450:590, 835:1480], chars=True)
+    sub_text = read_text(screen[sy1:sy2, sx1:sx2], chars=True)
     for line in sub_text.splitlines():
         parsed = parse_sub_stat(line)
         if parsed:

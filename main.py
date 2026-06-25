@@ -101,6 +101,7 @@ class Bot:
         self.stop_running = False
         self.isCrafted = False
         self.stop_requested = False
+        self.paused = False
 
         self.handlers = {
             cfg.LOGIN_1: self.handle_login,
@@ -166,14 +167,14 @@ class Bot:
         return None
 
     def listen_keyboard(self):
-        logger.info("鍵盤監聽已啟動 (按 F8 停止 Bot)...")
-        # 使用 ctypes 獲取 GetAsyncKeyState，更穩定且不依賴 pywin32 的包裝
+        logger.info("鍵盤監聽已啟動 (F8=停止, F9=暫停, F10=繼續)...")
         user32 = ctypes.windll.user32
         VK_F8 = 0x77
+        VK_F9 = 0x78
+        VK_F10 = 0x79
         
         while not self.stop_running:
             try:
-                # 偵測 F8 (高位為 1 表示按下)
                 if user32.GetAsyncKeyState(VK_F8) & 0x8000:
                     logger.warning("=" * 30)
                     logger.warning("偵測到 F8 按下，正在停止 Bot...")
@@ -181,6 +182,13 @@ class Bot:
                     self.stop_requested = True
                     self.stop_running = True
                     break
+                if user32.GetAsyncKeyState(VK_F9) & 0x8000 and not self.paused:
+                    logger.warning("偵測到 F9 按下，暫停 Bot...")
+                    actions.release_alt()
+                    self.paused = True
+                if user32.GetAsyncKeyState(VK_F10) & 0x8000 and self.paused:
+                    logger.warning("偵測到 F10 按下，繼續 Bot...")
+                    self.paused = False
             except Exception as e:
                 logger.error(f"鍵盤監聽錯誤: {e}")
                 break
@@ -244,6 +252,9 @@ class Bot:
                 logger.error("檢測到卡住且無法恢復，停止運行")
                 actions.release_alt()
                 break
+
+            while self.paused and not self.stop_running:
+                time.sleep(0.3)
 
             handler = self.handlers.get(state, self.handle_unknown_state)
             handler(screen)

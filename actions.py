@@ -29,7 +29,7 @@ def click(pos):
 
 
 def login_action():
-    click((960, 540))
+    click(cfg.CLICK_LOGIN)
 
 
 def home_action():
@@ -47,7 +47,7 @@ def claim_entrust_action():
 
 
 def successfully_claim_action():
-    click((960, 850))
+    click(cfg.CLICK_CLAIM_SUCCESS)
 
 
 def leave_action():

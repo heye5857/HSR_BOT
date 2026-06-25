@@ -36,6 +36,7 @@ def main():
 
     # 定義要包含的資料路徑
     image_dir = project_root / "images"
+    config_py = project_root / "config.py"
     
     # 建構 PyInstaller 指令
     cmd = [
@@ -59,6 +60,8 @@ def main():
     # 添加資料夾與檔案
     if image_dir.exists():
         cmd.append(f"--add-data={image_dir}{os.pathsep}images")
+    if config_py.exists():
+        cmd.append(f"--add-data={config_py}{os.pathsep}.")
     
     if icon_path.exists():
         print(f"🎨 套用圖標: {icon_path}")
@@ -96,6 +99,7 @@ def main():
         print("   1. 此程式需要「系統管理員權限」才能正常操作遊戲視窗。")
         print("   2. 請確保電腦已安裝 Tesseract-OCR，並在 config.py 中正確設定路徑。")
         print("   3. 圖片資源已封裝進執行檔中。")
+        print("   4. config.py 已複製到執行檔目錄，可直接編輯修改設定。")
     else:
         print("\n❌ 打包失敗！")
         sys.exit(1)

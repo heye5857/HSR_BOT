@@ -13,14 +13,30 @@ OCR_CHARS = "0123456789.%+暴擊率傷害攻擊力速度生命值防禦力頭部
 # 點擊座標
 CLICK_CENTER = (960, 540)
 CLICK_CONFIRM = (960, 700)
-CLICK_LOCKING = (455, 355)  # 鎖定按鈕標規幾何
-CLICK_DISCARD = (455, 405)   # 丢棄按鈕標規幾何
-CLICK_NEXT = (1600, 540)      # 下一按鈕統一座標
+CLICK_LOCKING = (455, 355)  # 鎖定按鈕
+CLICK_DISCARD = (455, 405)   # 丢棄按鈕
+CLICK_NEXT = (1600, 540)      # 下一按鈕
+CLICK_LOGIN = (960, 540)      # 登入
+CLICK_CLAIM_SUCCESS = (960, 850)  # 領取成功關閉
 
 # 偵測與比對設定
 MATCH_THRESHOLD = 0.85
 STUCK_TIME = 60
 LOOP_DELAY = 0.2
+
+# OCR 影像前處理
+OCR_RESIZE = 2          # 放大倍率
+OCR_THRESHOLD = 150     # 二值化門檻
+
+# 文字擷取區域 (y1, y2, x1, x2)
+STAMINA_ROI = (50, 80, 1470, 1575)
+RELIC_NAME_ROI = (600, 630, 790, 1020)
+RELIC_MAIN_STAT_ROI = (405, 440, 830, 980)
+RELIC_PART_ROI = (720, 750, 550, 600)
+RELIC_SUB_TEXT_ROI = (450, 590, 835, 1480)
+
+# 任務按鈕垂直偏移
+TASK_BUTTON_Y_OFFSET = 335
 
 # 狀態定義
 LOGIN_1 = "LOGIN_1"
@@ -179,3 +195,13 @@ RELIC_RULES = {
         },
     },
 }
+
+# 允許 PyInstaller 打包後仍可編輯設定（外部的 config.py 會覆蓋內建預設值）
+if getattr(sys, 'frozen', False):
+    _ext_config = Path(sys.executable).parent / 'config.py'
+    if _ext_config.exists():
+        _ext_vars = {}
+        exec(compile(open(_ext_config, encoding='utf-8').read(), 'config.py', 'exec'), _ext_vars)
+        for _k, _v in _ext_vars.items():
+            if not _k.startswith('_'):
+                globals()[_k] = _v

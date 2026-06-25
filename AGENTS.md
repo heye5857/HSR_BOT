@@ -12,6 +12,7 @@ python -m pip install -r requirements.txt
 
 - Install Tesseract-OCR separately; set `TESSERACT_CMD` in `config.py:8`
 - Set `GAME_PATH` in `config.py:5` to `StarRail.exe`
+- All user parameters in `config.py` — click coordinates, OCR settings, ROIs, thresholds
 - OCR language: `chi_tra` (Traditional Chinese), configurable at `config.py:9`
 - Expected game resolution: **1920×1080**
 - Admin privileges recommended (F8 key detection, window operations)
@@ -22,7 +23,7 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-Press **F8** to stop. Bot detects stuck state after 60s (`STUCK_TIME` in `config.py:18`), warns once, then stops.
+**F8** to stop, **F9** to pause (releases Alt), **F10** to resume. Bot detects stuck state after 60s (`STUCK_TIME` in `config.py:19`), warns once, then stops.
 
 ## Build executable
 
@@ -31,7 +32,7 @@ python -m pip install pyinstaller
 python build_exe.py
 ```
 
-Output: `dist\HSR_BOT\HSR_BOT.exe` (requires admin, bundles `images/`)
+Output: `dist\HSR_BOT\HSR_BOT.exe` (requires admin, bundles `images/`, copies `config.py` alongside .exe for editing)
 
 ## Architecture
 
