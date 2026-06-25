@@ -9,7 +9,6 @@ TESSERACT_CMD = Path(r"C:\Program Files\Tesseract-OCR\tesseract.exe")
 OCR_LANG = "chi_tra"
 OCR_CONFIG = "--psm 6"
 OCR_CHARS = "0123456789.%+暴擊率傷害攻擊力速度生命值防禦力頭部手軀幹腳功動閃耀的魔法少女應天涉遠卜者"
-OCR_CHARS_DIGITS = "--psm 6 -c tessedit_char_whitelist=0123456789"
 
 # 點擊座標
 CLICK_CENTER = (960, 540)

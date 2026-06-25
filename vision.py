@@ -186,19 +186,20 @@ def get_stamina(screen=None):
     if screen is None:
         screen = capture_screen()
     roi = screen[50:80, 1470:1575]
-    text = pytesseract.image_to_string(
-        preprocess(roi),
-        lang=cfg.OCR_LANG,
-        config=cfg.OCR_CHARS_DIGITS,
-    )
+    text = read_text(roi)
     print("OCR文字:", text)
 
-    digits = re.findall(r"\d+", text)
+    text = text.strip()
+    if len(text) <= 4:
+        print("⚠ 體力辨識失敗")
+        return None
+
+    digits = re.sub(r"[^\d]", "", text[:-4])
     if not digits:
         print("⚠ 體力辨識失敗")
         return None
 
-    stamina = int(digits[0])
+    stamina = int(digits)
     print("剩餘體力:", stamina)
     return stamina
 

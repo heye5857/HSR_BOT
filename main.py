@@ -63,14 +63,23 @@ def is_admin():
     except:
         return False
 
+_last_game_check = 0.0
+_last_game_result = True
+
 def is_game_running():
+    global _last_game_check, _last_game_result
+    now = time.time()
+    if now - _last_game_check < 10:
+        return _last_game_result
+    _last_game_check = now
     try:
         for process in psutil.process_iter(["name"]):
             if process.info["name"] and "StarRail" in process.info["name"]:
-                logger.debug(f"檢測到遊戲進程: {process.info['name']}")
+                _last_game_result = True
                 return True
     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
         logger.warning("掃描進程時發生錯誤")
+    _last_game_result = False
     return False
 
 class Bot:
@@ -227,7 +236,7 @@ class Bot:
                 self.reset_stuck_timer()
                 self.prev_state = state
                 logger.info(f"[第 {cycle_count} 循環] 狀態變更為: {state}")
-            else:
+            elif cycle_count % 20 == 0:
                 logger.debug(f"[第 {cycle_count} 循環] 當前狀態: {state}")
 
             stuck_status = self.check_stuck(state)
@@ -501,7 +510,7 @@ class Bot:
 
     def handle_unknown_state(self, screen):
         logger.warning("檢測到未知狀態，嘗試等待或手動操作")
-        time.sleep(1)
+        time.sleep(3)
 
 if __name__ == "__main__":
     try:
