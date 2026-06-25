@@ -2,7 +2,7 @@ import ctypes
 import time
 import pyautogui
 import config as cfg
-from vision import click_image, TEMPLATES, match
+from vision import click_image
 
 ALT = 0x12
 pyautogui.FAILSAFE = False
@@ -128,21 +128,15 @@ def select_action():
 
 
 def locking_action():
-    click_image(cfg.PATH["locking"])
+    click(cfg.CLICK_LOCKING)
 
 
 def discard_action():
-    click_image(cfg.PATH["discard"])
+    click(cfg.CLICK_DISCARD)
 
 
-def next_action(screen):
-    if match(screen, TEMPLATES["next_1"]):
-        click_image(cfg.PATH["next_1"])
-        return
-
-    if match(screen, TEMPLATES["next_2"]):
-        click_image(cfg.PATH["next_2"])
-        return
+def next_action():
+    click(cfg.CLICK_NEXT)
 
 
 def exit_stage_action():

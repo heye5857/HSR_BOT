@@ -256,9 +256,6 @@ class Bot:
                 logger.info("體力不足且已執行完相關操作，停止運行")
             self.stop_running = True
             return
-        print("進入主介面")
-        print(self.has_battled and self.daily_tasks is False)
-        print(self.has_battled, self.daily_tasks)
         if self.has_seen_home is False:
             logger.info("首次到達主界面，執行主界面操作...")
             actions.home_action()
@@ -330,9 +327,8 @@ class Bot:
                 reward_2 = vision.match(screen, vision.TEMPLATES["claim reward_2"], 0.95)
                 if not reward_1 and not reward_2:
                     break
-                else:
-                    actions.claim_reward_action()
-                    time.sleep(1)
+                actions.claim_reward_action()
+                time.sleep(1)
             
             if self.stop_requested:
                 return
@@ -434,7 +430,7 @@ class Bot:
         if vision.match(screen, vision.TEMPLATES["suitable"]):
             actions.locking_action()
             time.sleep(1)
-            actions.next_action(screen)
+            actions.next_action()
             time.sleep(1)
             return
 
@@ -443,7 +439,7 @@ class Bot:
         score = vision.score_relic(relic)
         print("遺物評分:", score)
         if score == "未知遺器":
-            actions.next_action(screen)
+            actions.next_action()
             time.sleep(1)
             return
         elif score >= 50:
@@ -451,11 +447,11 @@ class Bot:
         else:
             actions.discard_action()
         time.sleep(1)
-        actions.next_action(screen)
+        actions.next_action()
         time.sleep(1)
 
     def handle_selected(self, screen):
-        actions.next_action(screen)
+        actions.next_action()
         time.sleep(1)
 
     def handle_select_end(self, screen):

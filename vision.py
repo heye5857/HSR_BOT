@@ -11,6 +11,8 @@ import config as cfg
 
 pytesseract.pytesseract.tesseract_cmd = str(cfg.TESSERACT_CMD)
 
+_sct = mss.mss()
+
 def normalize_stat(text):
     text = text.strip()
     for wrong, correct in cfg.OCR_FIX.items():
@@ -62,19 +64,33 @@ for name, template_path in cfg.PATH.items():
 
 def capture_screen():
     """截取整個螢幕並回傳灰階影像。"""
-    with mss.mss() as sct:
-        monitor = sct.monitors[1]
-        img = np.array(sct.grab(monitor))
-        return cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
+    monitor = _sct.monitors[1]
+    img = np.array(_sct.grab(monitor))
+    return cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
 
 
-def find_center(template_path, threshold=cfg.MATCH_THRESHOLD):
+_PATH_TO_NAME = {v: k for k, v in cfg.PATH.items()}
+
+def _load_template(template_path):
+    template_name = _PATH_TO_NAME.get(template_path)
+    if template_name and template_name in TEMPLATES:
+        return TEMPLATES[template_name]
+    return cv2.imread(template_path, cv2.IMREAD_GRAYSCALE)
+
+
+def find_center(template_path, threshold=cfg.MATCH_THRESHOLD, screen=None):
     """在螢幕上尋找圖片範本中心座標，優先取最靠近左上角的位置。"""
-    screen = capture_screen()
-    template = cv2.imread(template_path, cv2.IMREAD_GRAYSCALE)
+    if screen is None:
+        screen = capture_screen()
+    template = _load_template(template_path)
 
     if template is None:
         print("⚠ 模板讀取失敗:", template_path)
+        return None
+
+    h_t, w_t = template.shape
+    h_s, w_s = screen.shape[:2]
+    if h_t > h_s or w_t > w_s:
         return None
 
     res = cv2.matchTemplate(screen, template, cv2.TM_CCOEFF_NORMED)
@@ -92,13 +108,12 @@ def find_center(template_path, threshold=cfg.MATCH_THRESHOLD):
     nearest = min((pt for pt in points if pt[1] <= min_y + nearby_y_threshold), 
                   key=lambda p: p[0])
     
-    h, w = template.shape
-    return (nearest[0] + w // 2, nearest[1] + h // 2)
+    return (nearest[0] + w_t // 2, nearest[1] + h_t // 2)
 
 
-def click_image(template_path, threshold=cfg.MATCH_THRESHOLD):
+def click_image(template_path, threshold=cfg.MATCH_THRESHOLD, screen=None):
     """點擊範本所在位置，找不到回傳 False。"""
-    pos = find_center(template_path, threshold)
+    pos = find_center(template_path, threshold, screen)
     if pos:
         pyautogui.click(pos[0], pos[1])
         return True
@@ -132,7 +147,7 @@ def detect_state(screen):
 
 
 def preprocess(roi):
-    roi = cv2.resize(roi, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+    roi = cv2.resize(roi, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
     _, roi = cv2.threshold(roi, 150, 255, cv2.THRESH_BINARY)
     return roi
 
