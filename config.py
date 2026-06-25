@@ -37,36 +37,41 @@ RELIC_SUB_TEXT_ROI = (450, 590, 835, 1480)
 # 任務按鈕垂直偏移
 TASK_BUTTON_Y_OFFSET = 335
 
-# 狀態定義
-LOGIN_1 = "LOGIN_1"
-LOGIN_2 = "LOGIN_2"
-HOME = "HOME"
-MAIN_MENU = "MAIN_MENU"
-CLAIM_ENTRUST = "CLAIM_ENTRUST"
-SUCCESSFULLY_CLAIM = "SUCCESSFULLY_CLAIM"
-ENTRUSTED = "ENTRUSTED"
-CLAIM_MAIL = "CLAIM_MAIL"
-DELETE = "DELETE"
-REWARD_PAGE = "REWARD_PAGE"
-TASK_PAGE = "TASK_PAGE"
-PREPARE = "PREPARE"
-PREPARED = "PREPARED"
-INSUFFICIENT_PHYSICAL_STRENGTH = "INSUFFICIENT_PHYSICAL_STRENGTH"
-CONFIRM = "CONFIRM"
-CHALLENGE_SUCCESSFUL = "CHALLENGE_SUCCESSFUL"
-BATTLE = "BATTLE"
-STATE = "STATE"
-START_CHALLENGE_1 = "START_CHALLENGE_1"
-START_CHALLENGE_2 = "START_CHALLENGE_2"
-SELECTED_1 = "SELECTED_1"
-SELECTED_2 = "SELECTED_2"
-SELECT_END = "SELECT_END"
-PASS_PAGE = "PASS_PAGE"
-PASS_MISSION_PAGE = "PASS_MISSION_PAGE"
-QUICK_COLLECTION = "QUICK_COLLECTION"
-CRAFTING_PAGE = "CRAFTING_PAGE"
-CONFIRM_CRAFT = "CONFIRM_CRAFT"
-UNKNOWN = "UNKNOWN"
+# 遺器評分規則
+RELIC_RULES = {
+    "功動閃耀的魔法少女": {
+        "body_main_scores": {
+            "暴擊率": 40,
+            "暴擊傷害": 40,
+            "攻擊力": 20,
+        },
+        "feet_main_scores": {
+            "速度": 40,
+            "攻擊力": 35,
+        },
+        "good_sub_scores": {
+            "暴擊率": 15,
+            "暴擊傷害": 15,
+            "速度": 12,
+            "攻擊力": 8,
+        },
+    },
+    "應天涉遠的卜者": {
+        "body_main_scores": {
+            "暴擊率": 40,
+            "暴擊傷害": 40,
+        },
+        "feet_main_scores": {
+            "速度": 40,
+        },
+        "good_sub_scores": {
+            "暴擊率": 15,
+            "暴擊傷害": 15,
+            "速度": 15,
+            "攻擊力": 8,
+        },
+    },
+}
 
 VALID_STATS = [
     "暴擊率",
@@ -159,41 +164,36 @@ PATH = {
     "closure": str(IMAGE_DIR / "closure.png"),
 }
 
-# 遺器評分規則
-RELIC_RULES = {
-    "功動閃耀的魔法少女": {
-        "body_main_scores": {
-            "暴擊率": 40,
-            "暴擊傷害": 40,
-            "攻擊力": 20,
-        },
-        "feet_main_scores": {
-            "速度": 40,
-            "攻擊力": 35,
-        },
-        "good_sub_scores": {
-            "暴擊率": 15,
-            "暴擊傷害": 15,
-            "速度": 12,
-            "攻擊力": 8,
-        },
-    },
-    "應天涉遠的卜者": {
-        "body_main_scores": {
-            "暴擊率": 40,
-            "暴擊傷害": 40,
-        },
-        "feet_main_scores": {
-            "速度": 40,
-        },
-        "good_sub_scores": {
-            "暴擊率": 15,
-            "暴擊傷害": 15,
-            "速度": 15,
-            "攻擊力": 8,
-        },
-    },
-}
+# 狀態定義
+LOGIN_1 = "LOGIN_1"
+LOGIN_2 = "LOGIN_2"
+HOME = "HOME"
+MAIN_MENU = "MAIN_MENU"
+CLAIM_ENTRUST = "CLAIM_ENTRUST"
+SUCCESSFULLY_CLAIM = "SUCCESSFULLY_CLAIM"
+ENTRUSTED = "ENTRUSTED"
+CLAIM_MAIL = "CLAIM_MAIL"
+DELETE = "DELETE"
+REWARD_PAGE = "REWARD_PAGE"
+TASK_PAGE = "TASK_PAGE"
+PREPARE = "PREPARE"
+PREPARED = "PREPARED"
+INSUFFICIENT_PHYSICAL_STRENGTH = "INSUFFICIENT_PHYSICAL_STRENGTH"
+CONFIRM = "CONFIRM"
+CHALLENGE_SUCCESSFUL = "CHALLENGE_SUCCESSFUL"
+BATTLE = "BATTLE"
+STATE = "STATE"
+START_CHALLENGE_1 = "START_CHALLENGE_1"
+START_CHALLENGE_2 = "START_CHALLENGE_2"
+SELECTED_1 = "SELECTED_1"
+SELECTED_2 = "SELECTED_2"
+SELECT_END = "SELECT_END"
+PASS_PAGE = "PASS_PAGE"
+PASS_MISSION_PAGE = "PASS_MISSION_PAGE"
+QUICK_COLLECTION = "QUICK_COLLECTION"
+CRAFTING_PAGE = "CRAFTING_PAGE"
+CONFIRM_CRAFT = "CONFIRM_CRAFT"
+UNKNOWN = "UNKNOWN"
 
 # 自動從 RELIC_RULES 產生 OCR 白名單字元
 _RELIC_CHARS = set("0123456789.%+頭部手軀幹腳")
