@@ -150,11 +150,7 @@ class Bot:
         if time.time() - self.last_change_time > cfg.STUCK_TIME:
             self.stuck_count += 1
             logger.warning(f"檢測到卡住: 計數 {self.stuck_count}，當前狀態: {state}")
-            if self.stuck_count == 2:
-                logger.info("嘗試恢復操作...")
-                actions.recover()
-                return "recovering"
-            elif self.stuck_count >= 3:
+            if self.stuck_count >= 2:
                 logger.error("檢測到卡住且無法恢復")
                 return "stop"
 
@@ -239,8 +235,6 @@ class Bot:
                 logger.error("檢測到卡住且無法恢復，停止運行")
                 actions.release_alt()
                 break
-            elif stuck_status == "recovering":
-                continue
 
             handler = self.handlers.get(state, self.handle_unknown_state)
             handler(screen)

@@ -22,7 +22,7 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-Press **F8** to stop. Bot detects stuck state after 60s (`STUCK_TIME` in `config.py:18`), recovers once, then stops.
+Press **F8** to stop. Bot detects stuck state after 60s (`STUCK_TIME` in `config.py:18`), warns once, then stops.
 
 ## Build executable
 

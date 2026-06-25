@@ -178,10 +178,3 @@ def closure_action():
 
 def pass_page_action():
     click_image(cfg.PATH["pass page"])
-
-
-def recover():
-    print("⚠ 修復中（回主畫面）")
-    for _ in range(4):
-        pyautogui.press("esc")
-        time.sleep(1)
