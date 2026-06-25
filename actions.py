@@ -177,8 +177,3 @@ def pass_page_action():
     click_image("pass page")
 
 
-def recover():
-    print("⚠ 修復中（回主畫面）")
-    for _ in range(4):
-        pyautogui.press("esc")
-        time.sleep(1)
