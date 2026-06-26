@@ -208,10 +208,10 @@ OCR_CHARS = "".join(sorted(_RELIC_CHARS))
 del _RELIC_CHARS
 
 # 允許 PyInstaller 打包後仍可編輯設定（外部的 config.py 會覆蓋內建預設值）
-if getattr(sys, 'frozen', False):
+if getattr(sys, 'frozen', False) and not globals().get('_EXT_LOADED'):
     _ext_config = Path(sys.executable).parent / 'config.py'
     if _ext_config.exists():
-        _ext_vars = {}
+        _ext_vars = {'_EXT_LOADED': True}
         exec(compile(open(_ext_config, encoding='utf-8').read(), 'config.py', 'exec'), _ext_vars)
         for _k, _v in _ext_vars.items():
             if not _k.startswith('_'):

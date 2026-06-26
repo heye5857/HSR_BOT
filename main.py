@@ -375,9 +375,9 @@ class Bot:
     def handle_task_page(self, screen):
         stamina = vision.get_stamina(screen)
         self.stamina = stamina
-        if stamina >= 40:
+        if stamina is not None and stamina >= 40:
             self.has_battled = False
-        if stamina >= 30 and vision.match(screen, vision.TEMPLATES["quick farm"], 0.95):
+        if stamina is not None and stamina >= 30 and vision.match(screen, vision.TEMPLATES["quick farm"], 0.95):
             actions.quick_farm_action()
             time.sleep(0.5)
             return
