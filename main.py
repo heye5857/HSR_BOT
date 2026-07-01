@@ -154,7 +154,7 @@ class Bot:
         self.stuck_count = 0
 
     def check_stuck(self, state):
-        if state == cfg.BATTLE:
+        if state in (cfg.BATTLE, cfg.STATE):
             return None
 
         if time.time() - self.last_change_time > cfg.STUCK_TIME:
@@ -451,8 +451,10 @@ class Bot:
     def handle_state_page(self, screen):
         if vision.match(screen, vision.TEMPLATES["suitable"]):
             actions.locking_action()
+            self.reset_stuck_timer()
             time.sleep(1)
             actions.next_action()
+            self.reset_stuck_timer()
             time.sleep(1)
             return
 
@@ -462,14 +464,17 @@ class Bot:
         print("遺物評分:", score)
         if score == "未知遺器":
             actions.next_action()
+            self.reset_stuck_timer()
             time.sleep(1)
             return
         elif score >= 50:
             actions.locking_action()
         else:
             actions.discard_action()
+        self.reset_stuck_timer()
         time.sleep(1)
         actions.next_action()
+        self.reset_stuck_timer()
         time.sleep(1)
 
     def handle_selected(self, screen):
