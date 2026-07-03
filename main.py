@@ -169,9 +169,9 @@ class Bot:
     def listen_keyboard(self):
         logger.info("鍵盤監聽已啟動 (F8=停止, F9=暫停, F10=繼續)...")
         user32 = ctypes.windll.user32
-        VK_F8 = 0x77
-        VK_F9 = 0x78
-        VK_F10 = 0x79
+        VK_F8 = cfg.VK_STOP
+        VK_F9 = cfg.VK_PAUSE
+        VK_F10 = cfg.VK_RESUME
         
         while not self.stop_running:
             try:

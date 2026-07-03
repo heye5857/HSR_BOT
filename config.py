@@ -23,6 +23,11 @@ MATCH_THRESHOLD = 0.85
 STUCK_TIME = 60
 LOOP_DELAY = 0.2
 
+# 快捷鍵設定 (Windows 虛擬鍵碼)
+VK_STOP = 0x75         # F6 - 停止機器人
+VK_PAUSE = 0x76        # F7 - 暫停機器人
+VK_RESUME = 0x77       # F8 - 繼續機器人
+
 # OCR 影像前處理
 OCR_RESIZE = 2          # 放大倍率
 OCR_THRESHOLD = 150     # 二值化門檻
