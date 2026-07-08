@@ -92,6 +92,7 @@ class Bot:
         self.entrusted = False
         self.mail_handled = False
         self.daily_tasks = None
+        self.task = None
         self.stamina = None
         self.selected = False
         self.has_battled = False
@@ -378,6 +379,7 @@ class Bot:
         if stamina is not None and stamina >= 40:
             self.has_battled = False
         if stamina is not None and stamina >= 30 and vision.match(screen, vision.TEMPLATES["quick farm"], 0.95):
+            self.task = "quick farm"
             actions.quick_farm_action()
             time.sleep(0.5)
             return
@@ -415,6 +417,7 @@ class Bot:
         time.sleep(0.5)
 
     def handle_prepared(self, screen):
+        self.task = "start challenge"
         actions.start_action()
         time.sleep(0.5)
 
@@ -423,7 +426,10 @@ class Bot:
         time.sleep(0.5)
         actions.reduce_action()
         time.sleep(0.5)
-        actions.start_action()
+        if self.task == "start challenge":
+            actions.start_action()
+        elif self.task == "quick farm":
+            actions.confirm_action()
         time.sleep(0.5)
         
     def handle_start_challenge_1(self, screen):
