@@ -328,9 +328,10 @@ def score_relic(data):
         stat_name = stat["name"]
         if stat_name not in good_sub:
             continue
-        if stat_name == "攻擊力" and not stat["is_percent"]:
-            score += good_sub[stat_name]
-        elif stat_name != "攻擊力":
+        if stat_name in ("攻擊力", "生命值", "防禦力"):
+            if stat["is_percent"]:
+                score += good_sub[stat_name]
+        else:
             score += good_sub[stat_name]
 
     return score

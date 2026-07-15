@@ -23,3 +23,5 @@ zuvio.log
 # Virtual environment
 venv/
 .venv/
+
+.omo/
